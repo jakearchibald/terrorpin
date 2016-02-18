@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rimraf build && mkdirp build && mkdirp build-test",
-    "serve": "npm run clean && (node scripts/build-watch.js --watch & node scripts/test-serve.js & wait)"
+    "serve": "npm run clean && node scripts/build-watch.js && (node scripts/build-watch.js --watch & node scripts/test-serve.js & wait)"
   },
   "repository": {
     "type": "git",

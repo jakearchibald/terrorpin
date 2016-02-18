@@ -1,3 +1,5 @@
+"use strict";
+
 const argv = require('minimist')(process.argv.slice(2));
 const fs = require("fs");
 const watchify = require("watchify");
@@ -10,9 +12,9 @@ const files = [
   'slide'
 ];
 
-for (const file of files) {
-  const inFile = `./src/${file}/index.js`;
-  const outFile = `./build/${file}.js`;
+for (var file of files) {
+  let inFile = `./src/${file}/index.js`;
+  let outFile = `./build/${file}.js`;
 
   spawnSync('babel', [inFile, '-o', outFile]);
   if (argv.watch) spawn('babel', [inFile, '-o', outFile, '-w']);

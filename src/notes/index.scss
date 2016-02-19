@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  overflow-y: auto;
+  color: #fff;
+  position: relative;
+}
+
+.notes {
+  flex: 1;
+
+  & ol {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-flow: column;
+  }
+
+  & li {
+    padding: 0.6em 0.5em;
+    font: normal 1.6rem/1 sans-serif;
+
+    &:nth-child(even) {
+      background: #222;
+    }
+  }
+}
+
+.meta {
+  background: #222;
+  display: flex;
+}

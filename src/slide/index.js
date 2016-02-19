@@ -1,5 +1,17 @@
+import parse from '../utils/dom/parse';
+
+const styles = require('fs').readFileSync(__dirname + '/index.scss');
+
 class Slide extends HTMLElement {
   createdCallback() {
+    this.attachShadow({mode: 'open'});
+    const style = document.createElement('style');
+    style.textContent = styles;
+    this.shadowRoot.appendChild(style);
+    this.shadowRoot.appendChild(parse(`
+      <slot></slot>
+    `));
+
     this.complete = false;
     this._stateContinuer = null;
     this._phaseResolver = () => {};
@@ -44,6 +56,16 @@ class Slide extends HTMLElement {
       return phasePromise;
     }
   }
+
+  add(content) {
+    if (typeof content == 'string') {
+      let nodes = parse(content);
+      this.appendChild(nodes);
+      return nodes.firstElementChild;
+    }
+    this.appendChild(content);
+    return content;
+  }
 }
 
-export default document.registerElement('terrorpin-slide', Slide);
+export default document.registerElement('tpin-slide', Slide);

@@ -1,5 +1,33 @@
-$green: red;
+:host {
+  background: black;
+  display: flex;
+  flex-flow: column;
+}
 
-html {
-  background: $green;
+.stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+tpin-notes {
+  height: 200px;
+}
+
+tpin-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.slides {
+  position: relative;
+  overflow: hidden;
+  min-width: var(--presentation-width);
+  min-height: var(--presentation-height);
 }

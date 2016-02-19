@@ -1,38 +1,65 @@
 import Slide from '../slide';
+import parse from '../utils/dom/parse.js';
+import '../notes';
 
 const styles = require('fs').readFileSync(__dirname + '/index.scss');
 
 class Presentation extends HTMLElement {
   createdCallback() {
+    const shadowRoot = this.attachShadow({mode: 'open'});
+    const style = document.createElement('style');
+    style.textContent = styles;
+    shadowRoot.appendChild(style);
+    shadowRoot.appendChild(parse(`
+      <div class="stage">
+        <div class="slides"></div>
+        <slot></slot>
+      </div>
+      <div class="notes">
+        <tpin-notes></tpin-notes>
+      </div>
+    `));
+
     this._slideDefs = [];
     this._currentSlideIndex = 0;
     this._currentSlide = null;
     this._listeners = [];
+    this._slideContainer = shadowRoot.querySelector('.slides');
+
     this.transition = true;
-    const shadowRoot = this.attachShadow({mode: 'open'});
-    const style = document.createElement('style');
-    style.textContent = ``;
-    shadowRoot.appendChild(style);
-    const div = document.createElement('div');
-    div.innerHTML = `<div class="whatever"><slot></slot></div>`;
-    shadowRoot.appendChild(div);
+    this.notes = shadowRoot.querySelector('tpin-notes');
   }
 
   attachedCallback() {
     this._addListener(document, 'keydown', event => {
       switch (event.key) {
         case 'ArrowRight':
+          this.transition = false;
           this.next();
           break;
         case 'ArrowLeft':
+          this.transition = false;
           this.previous();
+          break;
+        case ' ':
+          this.transition = true;
+          this.next();
           break;
       }
     });
+
+    this._addListener(window, 'resize', () => this._zoomSlides());
+    this._zoomSlides();
   }
 
   detachedCallback() {
     this._removeAllListeners();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (name == 'width' || name == 'height') {
+      this.style.setProperty(`--presentation-${name}`, `${newVal}px`);
+    }
   }
 
   addSlide(name, func) {
@@ -41,15 +68,22 @@ class Presentation extends HTMLElement {
     if (this._slideDefs.length == 1) {
       this.goTo(0);
     }
+    // do we need to populate the next slide name?
+    else if (this._currentSlideIndex == this._slideDefs.length - 2) {
+      this.notes.setNext(name);
+    }
   }
 
   async goTo(num, state = 0) {
     if (this._currentSlide) {
-      this.removeChild(this._currentSlide);
+      this._slideContainer.removeChild(this._currentSlide);
     }
     this._currentSlide = new Slide();
     this._currentSlideIndex = num;
-    this.appendChild(this._currentSlide);
+    this._slideContainer.appendChild(this._currentSlide);
+
+    this.notes.setNext((this._slideDefs[num + 1] || {name: 'No more slides'}).name);
+
     await this._currentSlide.run(this._slideDefs[num].func);
 
     while (state != 0 && !this._currentSlide.complete) {
@@ -78,6 +112,13 @@ class Presentation extends HTMLElement {
     this._currentSlide.next();
   }
 
+  _zoomSlides() {
+    this._slideContainer.style.scale = '';
+    const rect = this._slideContainer.getBoundingClientRect();
+    const parentRect = this._slideContainer.parentNode.getBoundingClientRect();
+    this._slideContainer.style.scale = Math.min(parentRect.width / rect.width, parentRect.height / rect.height);
+  }
+
   _addListener(obj, ...listenerArgs) {
     obj.addEventListener(...listenerArgs);
     this._listeners.push([obj, ...listenerArgs]);
@@ -90,4 +131,4 @@ class Presentation extends HTMLElement {
   }
 }
 
-export default document.registerElement('terrorpin-presentation', Presentation);
+export default document.registerElement('tpin-presentation', Presentation);

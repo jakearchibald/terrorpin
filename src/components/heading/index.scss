@@ -1,0 +1,16 @@
+:host {
+  color: #fff;
+  display: block;
+}
+
+h1 {
+  opacity: 0;
+  font-family: sans-serif;
+
+  &.on {
+    opacity: 1;
+  }
+  &.on-transition {
+    transition: opacity 3s ease-in-out;
+  }
+}

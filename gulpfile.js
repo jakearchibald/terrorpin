@@ -70,7 +70,7 @@ function script() {
 }
 
 function testCopy() {
-  return gulp.src('test/*.html')
+  return gulp.src('test/*.html', 'test/imgs')
     .pipe(gulp.dest('build-test/'));
 }
 
@@ -111,7 +111,7 @@ function watch() {
 
 function testWatch() {
   gulp.watch('test/*.html', testCopy);
-  gulp.watch('test/*.sass', testSass);
+  gulp.watch('test/*.scss', testSass);
   testScript({ watch: true });
 }
 

@@ -1,4 +1,6 @@
-import Slide from './slide.js';
+import Slide from '../slide';
+
+const styles = require('fs').readFileSync(__dirname + '/index.scss');
 
 class Presentation extends HTMLElement {
   createdCallback() {
@@ -7,6 +9,13 @@ class Presentation extends HTMLElement {
     this._currentSlide = null;
     this._listeners = [];
     this.transition = true;
+    const shadowRoot = this.attachShadow({mode: 'open'});
+    const style = document.createElement('style');
+    style.textContent = ``;
+    shadowRoot.appendChild(style);
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="whatever"><slot></slot></div>`;
+    shadowRoot.appendChild(div);
   }
 
   attachedCallback() {

@@ -14,7 +14,8 @@ class Slide extends HTMLElement {
 
     this.complete = false;
     this._stateContinuer = null;
-    this._phaseResolver = () => {};
+    this._phaseNameResolver = () => {};
+    this.nextPhaseName = Promise.resolve(undefined);
     this.state = 0;
   }
 
@@ -25,35 +26,39 @@ class Slide extends HTMLElement {
   }
 
   run(func) {
-    const phasePromise = this._nextPhaseDone();
+    this._createPhaseNamePromise();
 
     Promise.resolve(func(this)).then(() => {
       this.complete = true;
-      this._phaseResolver();
+      this._phaseNameResolver(undefined);
     });
 
-    return phasePromise;
+    return this.nextPhaseName.then(() => undefined);
   }
 
-  _nextPhaseDone() {
-    return new Promise(resolve => {
-      this._phaseResolver = resolve;
+  _createPhaseNamePromise() {
+    this.nextPhaseName = new Promise(resolve => {
+      this._phaseNameResolver = resolve;
     });
   }
 
-  addState() {
-    this._phaseResolver();
+  addState(name) {
     return new Promise(resolve => {
+      if (this._stateContinuer) throw Error("Cannot add a state while a state is pending");
+      if (this.complete) throw Error("Cannot add slide state after slide is complete");
+
+      this._phaseNameResolver(name);
       this._stateContinuer = resolve;
     });
   }
 
   next() {
     if (this._stateContinuer) {
-      const phasePromise = this._nextPhaseDone();
+      this._createPhaseNamePromise();
       this.state++;
       this._stateContinuer();
-      return phasePromise;
+      this._stateContinuer = null;
+      return this.nextPhaseName.then(() => undefined);
     }
   }
 

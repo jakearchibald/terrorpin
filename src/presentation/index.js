@@ -68,10 +68,6 @@ class Presentation extends HTMLElement {
     if (this._slideDefs.length == 1) {
       this.goTo(0);
     }
-    // do we need to populate the next slide name?
-    else if (this._currentSlideIndex == this._slideDefs.length - 2) {
-      this.notes.setNext(name);
-    }
   }
 
   async goTo(num, state = 0) {
@@ -82,14 +78,23 @@ class Presentation extends HTMLElement {
     this._currentSlideIndex = num;
     this._slideContainer.appendChild(this._currentSlide);
 
-    this.notes.setNext((this._slideDefs[num + 1] || {name: 'No more slides'}).name);
-
     await this._currentSlide.run(this._slideDefs[num].func);
 
     while (state != 0 && !this._currentSlide.complete) {
       await this._currentSlide.next();
       state--;
     }
+
+    this._setNextText();
+  }
+
+  _setNextText() {
+    this._currentSlide.nextPhaseName.then(name => {
+      if (name === undefined) {
+        name = (this._slideDefs[this._currentSlideIndex + 1] || {name: "No more slides"}).name;
+      }
+      this.notes.setNext(name);
+    });
   }
 
   previous() {
@@ -110,6 +115,7 @@ class Presentation extends HTMLElement {
       return;
     }
     this._currentSlide.next();
+    this._setNextText();
   }
 
   _zoomSlides() {
@@ -126,7 +132,7 @@ class Presentation extends HTMLElement {
 
   _removeAllListeners() {
     for (const [obj, ...args] of this._listeners) {
-      obj.removeEventListern(...args);
+      obj.removeEventListener(...args);
     }
   }
 }

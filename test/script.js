@@ -6,7 +6,7 @@ presentation.setAttribute('width', 1920);
 presentation.setAttribute('height', 1080);
 const notes = presentation.notes;
 
-presentation.addSlide("Slide name", async function(slide) {
+presentation.addSlide("First slide", async function(slide) {
   console.log('one');
   notes.set(`
     This sort of thing works well for me
@@ -15,7 +15,7 @@ presentation.addSlide("Slide name", async function(slide) {
   `);
   notes.startTimer();
 
-  await slide.addState('State name');
+  await slide.addState('First slide second state');
   console.log('two');
   notes.set(`
     Here are some more notes
@@ -23,16 +23,16 @@ presentation.addSlide("Slide name", async function(slide) {
   `);
   slide.add('<tpin-h>Hello</tpin-h>');
 
-  await slide.addState('Another state name');
+  await slide.addState('First slide third state');
   console.log('three');
   slide.add('<tpin-h>World</tpin-h>');
 });
 
-presentation.addSlide("Slide2 name", async function(slide) {
+presentation.addSlide("Second slide first state", async function(slide) {
   console.log('one');
-  await slide.addState('State name');
+  await slide.addState('Second slide second state');
   console.log('two');
-  await slide.addState('Another state name');
+  await slide.addState('Second slide third state');
   console.log('three');
 });
 

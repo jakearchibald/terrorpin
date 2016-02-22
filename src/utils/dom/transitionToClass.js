@@ -14,7 +14,10 @@ export default function transitionToClass(element, className = 'on') {
   element.offsetWidth; // force layout
 
   return Promise.all(
-    element.getAnimations().map(a => a.finished)
+    element.getAnimations().map(
+      // web animations use rejections to signify animation abort :(
+      a => a.finished.then(() => true).catch(() => false)
+    )
   ).then(() => {
     element.classList.remove(`${className}-transition`);
   });

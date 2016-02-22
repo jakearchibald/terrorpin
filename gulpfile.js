@@ -46,10 +46,17 @@ function script() {
     }))
     .pipe(through.obj(function(file, enc, callback) {
       const sm = staticModule({
-        fs: {
-          readFileSync: function (file) {
+        'gulp-preprocess': {
+          inlineSass: file => {
             return gulp.src(file)
               .pipe(sass().on('error', sass.logError))
+              .pipe(through.obj(function(file, enc, callback) {
+                this.push(file.contents);
+                callback();
+              })).pipe(quote());
+          },
+          inlineText: file => {
+            return gulp.src(file)
               .pipe(through.obj(function(file, enc, callback) {
                 this.push(file.contents);
                 callback();
@@ -60,7 +67,7 @@ function script() {
 
       const self = this;
 
-      file.pipe(sm).pipe(bl(function(err, data){
+      file.pipe(sm).pipe(bl(function(err, data) {
         file.contents = data;
         self.push(file);
         return callback();

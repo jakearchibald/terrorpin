@@ -1,7 +1,7 @@
 import parse from '../../utils/dom/parse.js';
 import transitionToClass from '../../utils/dom/transitionToClass.js';
 
-const styles = require('fs').readFileSync(__dirname + '/index.scss');
+const styles = require('gulp-preprocess').inlineSass(__dirname + '/index.scss');
 
 class Heading extends HTMLElement {
   createdCallback() {

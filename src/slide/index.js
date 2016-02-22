@@ -1,6 +1,6 @@
 import parse from '../utils/dom/parse';
 
-const styles = require('fs').readFileSync(__dirname + '/index.scss');
+const styles = require('gulp-preprocess').inlineSass(__dirname + '/index.scss');
 
 class Slide extends HTMLElement {
   createdCallback() {

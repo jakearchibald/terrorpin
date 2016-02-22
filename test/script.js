@@ -16,6 +16,7 @@ presentation.addSlide("First slide", async function(slide) {
   notes.startTimer();
 
   await slide.addState('First slide second state');
+
   console.log('two');
   notes.set(`
     Here are some more notes

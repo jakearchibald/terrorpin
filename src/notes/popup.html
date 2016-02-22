@@ -1,0 +1,26 @@
+<style>
+html, body {
+  background: #000;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
+  display: flex;
+}
+tpin-notes {
+  flex: 1;
+}
+</style>
+<script>
+  (function() {
+    const lsKey = 'popup-are-you-there';
+
+    window.addEventListener('storage', event => {
+      console.log('popup storage event');
+      if (event.key == lsKey) {
+        localStorage.setItem(lsKey, 'yes');
+      }
+    });
+  }())
+</script>

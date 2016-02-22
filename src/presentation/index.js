@@ -1,8 +1,9 @@
 import Slide from '../slide';
 import parse from '../utils/dom/parse.js';
 import '../notes';
+import {create as createPopup, exists as popupExists} from '../notes/popup.js';
 
-const styles = require('fs').readFileSync(__dirname + '/index.scss');
+const styles = require('gulp-preprocess').inlineSass(__dirname + '/index.scss');
 
 class Presentation extends HTMLElement {
   createdCallback() {
@@ -17,6 +18,7 @@ class Presentation extends HTMLElement {
       </div>
       <div class="notes">
         <tpin-notes></tpin-notes>
+        <button class="pop-out"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 20"><path d="M9 0v2h3L7 7l2 2 5-5v3h2V0H9zm5 14H2V2h4V0H0v16h16v-6h-2v4z"/></svg></button>
       </div>
     `));
 
@@ -25,35 +27,44 @@ class Presentation extends HTMLElement {
     this._currentSlide = null;
     this._listeners = [];
     this._slideContainer = shadowRoot.querySelector('.slides');
+    this._popOutBtn = shadowRoot.querySelector('.pop-out');
 
     this.transition = true;
     this.notes = shadowRoot.querySelector('tpin-notes');
+
+    this._popOutBtn.addEventListener('click', () => this._createPopup());
+    popupExists.then(alreadyExists => {
+      if (alreadyExists) this._createPopup();
+    });
   }
 
   attachedCallback() {
-    this._addListener(document, 'keydown', event => {
+    this._addExternalListener(document, 'keydown', event => {
       switch (event.key) {
         case 'ArrowRight':
+          event.preventDefault();
           this.transition = false;
           this.next();
           break;
         case 'ArrowLeft':
+          event.preventDefault();
           this.transition = false;
           this.previous();
           break;
         case ' ':
+          event.preventDefault();
           this.transition = true;
           this.next();
           break;
       }
     });
 
-    this._addListener(window, 'resize', () => this._zoomSlides());
+    this._addExternalListener(window, 'resize', () => this._zoomSlides());
     this._zoomSlides();
   }
 
   detachedCallback() {
-    this._removeAllListeners();
+    this._removeAllExternalListeners();
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
@@ -88,15 +99,6 @@ class Presentation extends HTMLElement {
     this._setNextText();
   }
 
-  _setNextText() {
-    this._currentSlide.nextPhaseName.then(name => {
-      if (name === undefined) {
-        name = (this._slideDefs[this._currentSlideIndex + 1] || {name: "No more slides"}).name;
-      }
-      this.notes.setNext(name);
-    });
-  }
-
   previous() {
     if (this._currentSlide.state == 0) {
       if (this._slideDefs[this._currentSlideIndex - 1]) {
@@ -118,6 +120,21 @@ class Presentation extends HTMLElement {
     this._setNextText();
   }
 
+  _createPopup() {
+    createPopup(this.notes);
+    this._popOutBtn.style.display = 'none';
+    this._zoomSlides();
+  }
+
+  _setNextText() {
+    this._currentSlide.nextPhaseName.then(name => {
+      if (name === undefined) {
+        name = (this._slideDefs[this._currentSlideIndex + 1] || {name: "No more slides"}).name;
+      }
+      this.notes.setNext(name);
+    });
+  }
+
   _zoomSlides() {
     this._slideContainer.style.scale = '';
     const rect = this._slideContainer.getBoundingClientRect();
@@ -125,12 +142,12 @@ class Presentation extends HTMLElement {
     this._slideContainer.style.scale = Math.min(parentRect.width / rect.width, parentRect.height / rect.height);
   }
 
-  _addListener(obj, ...listenerArgs) {
+  _addExternalListener(obj, ...listenerArgs) {
     obj.addEventListener(...listenerArgs);
     this._listeners.push([obj, ...listenerArgs]);
   }
 
-  _removeAllListeners() {
+  _removeAllExternalListeners() {
     for (const [obj, ...args] of this._listeners) {
       obj.removeEventListener(...args);
     }

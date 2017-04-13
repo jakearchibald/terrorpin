@@ -24,19 +24,19 @@ tpin-slide {
   bottom: 0;
   overflow: hidden;
 }
-
+/*
 .slides {
   position: relative;
   overflow: hidden;
   min-width: var(--presentation-width);
   min-height: var(--presentation-height);
-}
+}*/
 
 .pop-out {
   background: none;
   border: none;
   padding: 0;
-  margin: 0 10px 10px 0;
+  margin: 0 17px 10px 0;
   display: inline-block;
   fill: #fff;
   vertical-align: middle;

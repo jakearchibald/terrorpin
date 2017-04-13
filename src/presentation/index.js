@@ -13,12 +13,13 @@ class Presentation extends HTMLElement {
     shadowRoot.appendChild(style);
     shadowRoot.appendChild(parse(`
       <div class="stage">
-        <div class="slides"></div>
-        <slot></slot>
+        <div class="slides">
+          <slot></slot>
+        </div>
       </div>
       <div class="notes">
         <tpin-notes></tpin-notes>
-        <button class="pop-out"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 20"><path d="M9 0v2h3L7 7l2 2 5-5v3h2V0H9zm5 14H2V2h4V0H0v16h16v-6h-2v4z"/></svg></button>
+        <button class="pop-out"><svg viewBox="0 0 16 20"><path d="M9 0v2h3L7 7l2 2 5-5v3h2V0H9zm5 14H2V2h4V0H0v16h16v-6h-2v4z"/></svg></button>
       </div>
     `));
 
@@ -83,11 +84,11 @@ class Presentation extends HTMLElement {
 
   async goTo(num, state = 0) {
     if (this._currentSlide) {
-      this._slideContainer.removeChild(this._currentSlide);
+      this.removeChild(this._currentSlide);
     }
     this._currentSlide = new Slide();
     this._currentSlideIndex = num;
-    this._slideContainer.appendChild(this._currentSlide);
+    this.appendChild(this._currentSlide);
 
     await this._currentSlide.run(this._slideDefs[num].func);
 

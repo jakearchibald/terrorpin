@@ -5,22 +5,15 @@ const quote = require('quote-stream');
 const path = require('path');
 const bl = require('bl');
 const fs = require('fs');
-const babel = require('gulp-babel');
 const through = require('through2');
 const sass = require('gulp-sass');
 const promisify = require("promisify-node");
-const watchify = require("watchify");
-const browserify = require("browserify");
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
-const gutil = require('gulp-util');
-const spawn = require('child_process').spawn;
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
 function clean() {
-  return del(['build', 'build-test']);
+  return del(['dist', 'dist-test']);
 }
 
 // Processes all scripts in src & embeds their CSS
@@ -28,7 +21,6 @@ function script() {
   const lastRun = gulp.lastRun(script) || 0;
 
   return gulp.src('src/**/*.js')
-    .pipe(babel())
     // filter out unchanged files
     // Each file in the directory is checked so CSS changes work too
     .pipe(through.obj(function(file, enc, callback) {
@@ -68,70 +60,18 @@ function script() {
       const self = this;
 
       file.pipe(sm).pipe(bl(function(err, data) {
+        console.log(err, file.path);
         file.contents = data;
         self.push(file);
         return callback();
       }));
     }))
-    .pipe(gulp.dest('build/'));
-}
-
-function testCopy() {
-  return gulp.src('test/*.html', 'test/imgs')
-    .pipe(gulp.dest('build-test/'));
-}
-
-function testScript(opts) {
-  opts = opts || {};
-
-  return gulp.src('test/*.js', {buffer: false})
-    .pipe(through.obj(function(file, enc, callback) {
-      const b = browserify({ cache: {}, packageCache: {} })
-        .transform("babelify")
-        .add(file.path);
-
-      if (opts.watch) b.plugin(watchify);
-
-      const bundle = () => {
-        b.bundle()
-          .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-          .pipe(source(path.basename(file.path)))
-          //.pipe(buffer())
-          .pipe(gulp.dest('build-test'));
-      };
-
-      b.on('update', bundle);
-      bundle();
-      callback();
-    }));
-}
-
-function testSass() {
-  return gulp.src('test/style.scss')
-    .pipe(sass().on('error', sass.logError))
-    .pipe(gulp.dest('build-test'));
+    .pipe(gulp.dest('dist/'));
 }
 
 function watch() {
   gulp.watch('src/**', script);
 }
 
-function testWatch() {
-  gulp.watch('test/*.html', testCopy);
-  gulp.watch('test/*.scss', testSass);
-  testScript({ watch: true });
-}
-
-function testServe() {
-  spawn('http-server', ['build-test', '-p', '8000']);
-  console.log('Serving on localhost:8000');
-}
-
-gulp.task(watch);
 gulp.task('build', gulp.series(clean, script));
-
-gulp.task('serve', gulp.series(
-  'build',
-  gulp.parallel(testCopy, testScript, testSass),
-  gulp.parallel(watch, testWatch, testServe)
-));
+gulp.task('watch', gulp.series(clean, script, watch));
